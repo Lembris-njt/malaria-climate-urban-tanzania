@@ -57,15 +57,6 @@ is switched off by default (`run_cross_validation <- FALSE`). Once
 `Data/analysis_data.csv` exists you can set `build_dataset <- FALSE` to skip
 the data preparation.
 
-## Method reference
-
-The modelling framework follows
-
-Lowe R, Lee SA, O'Reilly KM, et al. Combined effects of hydrometeorological
-hazards and urbanisation on dengue risk in Brazil: a spatiotemporal modelling
-study. *Lancet Planetary Health* 2021; 5: e209-e219.
-https://github.com/drrachellowe/hydromet_dengue
-
 ## Contact
 
 Lembris Njotto
