@@ -1,14 +1,8 @@
 # Climate, vegetation and urbanisation as drivers of malaria in Tanzania
 
-R code for a spatio-temporal Bayesian analysis of monthly malaria cases in the
-184 councils of mainland Tanzania (2015-2025). The model links malaria to
-temperature, rainfall, humidity, drought (PDSI), wind, vegetation greenness
-(EVI) and El Nino (ONI), each with a delayed and non-linear effect over 0-6
-months, and tests whether urbanisation and vegetation change the effect of
-rainfall and greenness.
+R code for a spatio-temporal Bayesian analysis of monthly malaria cases in the 184 councils of mainland Tanzania (2015-2025). The model links malaria to temperature, rainfall, humidity, drought (PDSI), wind, vegetation greenness (EVI) and El Nino (ONI), each with a delayed and non-linear effect over 6 months, and tests whether urbanisation and vegetation change the effect of rainfall and greenness.
 
-Everything is in one script, `malaria_climate_urban_tanzania.R`, which runs
-from the raw data to the final figures and tables.
+Everything is in one script, `malaria_climate_urban_tanzania.R`, which runs from the raw data to the final figures and tables.
 
 ## What the script does
 
@@ -25,13 +19,8 @@ from the raw data to the final figures and tables.
 
 No data are included in this repository.
 
-- **Malaria cases**: monthly confirmed malaria cases at outpatient departments
-  by council, from the national HMIS (DHIS2). These data belong to the
-  Ministry of Health and cannot be shared here; requests should go to the
-  National Malaria Control Programme. The script expects a file
-  `Data/tz_council_opd_monthly.csv` with the columns
-  `Region, Council, year, month, OPD_cases, OPD_attendance, population`.
-- **Council boundaries**: `Data/tz_council_geometry.shp` (columns `Region`, `name`).
+- **Malaria cases**: monthly confirmed malaria cases by council. These data belong to the Ministry of Health and cannot be shared here directly; requests should go to the corresponding author of the manuscript. The script expects a file `Data/your_malaria_data_monthly.csv` with the columns  `Region, Council, year, month, Mal_cases, attendance, population`.
+- **Council boundaries**: `Data/your_area_geometry.shp` (columns `Region`, `name`).
 - **TerraClimate** (https://www.climatologylab.org/terraclimate.html):
   downloaded by the script.
 - **Population**: GPW / WorldPop rasters through the `geodata` package,
@@ -44,18 +33,11 @@ No data are included in this repository.
 
 ## How to run
 
-1. Install R (4.3 or later) and the packages loaded at the top of the script.
-   R-INLA is installed from its own repository (see the comment in Part 1).
+1. Install R (4.5 or later) and the packages loaded at the top of the script. R-INLA is installed from its own repository.
 2. Put the data files in a folder called `Data/` next to the script.
-3. Run the script from that folder. Figures go to `outputs/figures/`, tables
-   to `outputs/tables/` and fitted models to `outputs/models/`.
+3. Run the script from that folder. Figures go to `outputs/figures/`, tables to `outputs/tables/` and fitted models to `outputs/models/`.
 
-Every model is saved after it is fitted, so the script can be stopped and
-started again without refitting. Fitting all models takes several hours on a
-normal laptop. The cross-validation in Part 17 refits the model 132 times and
-is switched off by default (`run_cross_validation <- FALSE`). Once
-`Data/analysis_data.csv` exists you can set `build_dataset <- FALSE` to skip
-the data preparation.
+Every model is saved after it is fitted, so the script can be stopped and started again without refitting. Fitting all models takes several hours on a normal laptop. The cross-validation in Part 17 refits the model 132 times and is switched off by default (`run_cross_validation <- FALSE`). Once `Data/analysis_data.csv` exists you can set `build_dataset <- FALSE` to skip the data preparation.
 
 ## Contact
 
