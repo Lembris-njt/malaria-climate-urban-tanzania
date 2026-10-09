@@ -1,10 +1,9 @@
 ################################################################################
 #
-#  Climate, vegetation and urbanisation as drivers of malaria in Tanzania
-#  A spatio-temporal Bayesian model with distributed lag non-linear terms
+#  Climate, vegetation and urbanisation as drivers of malaria in Tanzania. A spatio-temporal Bayesian model with distributed lag non-linear terms
 #
 #  Author : Lembris Njotto
-#  Data   : monthly malaria OPD cases for 184 councils, 2014-2025
+#  Data   : monthly malaria cases for 184 councils, 2014-2025
 #
 #  The script runs the whole analysis from the start to the end:
 #
@@ -26,13 +25,7 @@
 #    Part 16 Results: relative risk and exceedance maps
 #    Part 17 Validation: calibration, holdout and cross-validation
 #
-#  No data are included. The malaria case data come from the national
-#  HMIS (DHIS2) and cannot be shared publicly. The climate, vegetation and
-#  population data are open and the code below shows where to get them.
-#
-#  The modelling approach follows Lowe et al. (2021), Lancet Planetary Health,
-#  "Combined effects of hydrometeorological hazards and urbanisation on dengue
-#  risk in Brazil" (https://github.com/drrachellowe/hydromet_dengue).
+#  No data are included. The climate, vegetation and population data are open and the code below shows where to get them.
 #
 ################################################################################
 
@@ -360,14 +353,14 @@ if (build_dataset) {
 # ==============================================================================
 #
 # The case file is one row per council and month with the columns
-#   Region, Council, year, month, OPD_cases, OPD_attendance, population
-# where OPD_cases are confirmed malaria cases seen at outpatient departments
+#   Region, Council, year, month, Mal_cases, attendance, population
+# where Mal_cases are confirmed malaria cases seen at outpatient departments
 # and population is the council population for that year.
 
 analysis_file <- file.path(data_dir, "analysis_data.csv")
 
 if (build_dataset) {
-  cases <- read.csv(file.path(data_dir, "your_areas_monthly.csv"))
+  cases <- read.csv(file.path(data_dir, "your_malaria_data_monthly.csv"))
 
   data <- cases |>
     left_join(climate, by = c("Region", "Council", "year", "month")) |>
@@ -414,11 +407,11 @@ ecozone_map <- council_map |>
 model_data <- data[year > 2014] # 2014 is only used for the lags
 
 # Malaria incidence rate (MIR) per 100,000 people
-model_data[, mir := OPD_cases / population * 1e5]
+model_data[, mir := Mal_cases / population * 1e5]
 
 # 7a. National monthly MIR with the main climate variables
 national <- model_data[, .(
-  MIR = sum(OPD_cases) / sum(population) * 1e5,
+  MIR = sum(Mal_cases) / sum(population) * 1e5,
   Rainfall = weighted.mean(ppt, population),
   Tmax = weighted.mean(tmax, population),
   RH = weighted.mean(rh_pct, population),
@@ -440,7 +433,7 @@ fig_national <- national |>
 ggsave(file.path(fig_dir, "fig01_national_time_series.pdf"), fig_national, width = 18, height = 22, units = "cm")
 
 # 7b. Annual MIR per council
-annual <- model_data[, .(mir = sum(OPD_cases) / mean(population) * 1e5), by = .(council_code, year)]
+annual <- model_data[, .(mir = sum(Mal_cases) / mean(population) * 1e5), by = .(council_code, year)]
 fig_annual <- council_map |>
   left_join(annual, by = "council_code") |>
   ggplot() +
@@ -474,7 +467,7 @@ corrplot(cor_mat,
 dev.off()
 
 # VIF for the covariates that enter the final model (tmax, not tmin)
-vif_fit <- lm(OPD_cases ~ tmax + ppt + rh_pct + pdsi + ws + urban + evi + oni, data = model_data)
+vif_fit <- lm(Mal_cases ~ tmax + ppt + rh_pct + pdsi + ws + urban + evi + oni, data = model_data)
 print(vif(vif_fit))
 
 
@@ -577,7 +570,7 @@ nb2INLA(graph_file, nb)
 
 # Model variables
 df <- data.frame(
-  Y = data$OPD_cases,
+  Y = data$Mal_cases,
   E = data$population / 1e5, # offset: rate per 100,000
   T1 = data$month, # month of the year (seasonality)
   T2 = data$year - 2014, # year (replicate for the spatial effect)
@@ -1023,7 +1016,7 @@ reference_row <- function(basis, ref) {
 
 attributable <- function(basis, ref, contribution) {
   W <- unclass(basis) - matrix(reference_row(basis, ref), nrow(basis), ncol(basis), byrow = TRUE)
-  y <- data$OPD_cases
+  y <- data$Mal_cases
   an <- sapply(1:500, function(s) {
     c_it <- contribution(W, s)
     pos <- c_it > 0
@@ -1078,7 +1071,7 @@ gc()
 
 nb_size <- hyper$mean[grepl("size for the nbinomial", hyper$parameter)]
 
-rr_data <- data[, .(council_code, year, cases = OPD_cases, pop = population)]
+rr_data <- data[, .(council_code, year, cases = Mal_cases, pop = population)]
 rr_data[, rate := sum(cases) / sum(pop), by = year]
 rr_data[, expected := pop * rate]
 
@@ -1117,7 +1110,7 @@ ggsave(file.path(fig_dir, "fig13_exceedance_by_year.pdf"), fig_exceed, width = 3
 
 # Observed vs fitted national MIR with 95% credible interval
 national_fit <- rowsum(mu, data$time) / as.vector(rowsum(data$population / 1e5, data$time))
-national_obs <- data[, .(obs = sum(OPD_cases) / sum(population) * 1e5), by = time]
+national_obs <- data[, .(obs = sum(Mal_cases) / sum(population) * 1e5), by = time]
 national_obs[, `:=`(
   fit = rowMeans(national_fit),
   lo = apply(national_fit, 1, quantile, 0.025),
@@ -1142,7 +1135,7 @@ ggsave(file.path(fig_dir, "fig14_observed_vs_fitted.pdf"), fig_fit, width = 18, 
 
 # 17a. Calibration (in sample). Randomised PIT for counts (Czado et al. 2009)
 # and coverage of the 95% and 50% predictive intervals.
-y <- data$OPD_cases
+y <- data$Mal_cases
 F_upper <- rowMeans(pnbinom(y, mu = mu, size = nb_size))
 F_lower <- rowMeans(pnbinom(y - 1, mu = mu, size = nb_size))
 set.seed(1)
