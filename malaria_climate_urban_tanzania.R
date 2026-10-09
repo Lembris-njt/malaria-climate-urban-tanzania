@@ -87,15 +87,9 @@ years <- 2014:2025
 # ==============================================================================
 
 # Shapefile of the 184 councils (columns: Region, name)
-councils <- st_read(file.path(data_dir, "tz_council_geometry.shp")) |>
+councils <- st_read(file.path(data_dir, "your_area_geometry.shp")) |>
   rename(Council = name) |>
   st_make_valid()
-
-# Council code = alphabetical order of council names
-councils <- councils |>
-  mutate(council_code = as.integer(factor(Council)))
-
-cat("Number of councils:", nrow(councils), "\n")
 
 
 # ==============================================================================
@@ -281,35 +275,23 @@ urban_share <- function(pop, mask) {
   )
 }
 
-# Ecozones used for the seasonal random effect
+# Ecozones used for the seasonal random effect (Here we use Region 1 ... as example of regions names)
 ecozones <- tribble(
   ~Region, ~ecozone_name,
-  "Arusha Region", "Northern",
-  "Kilimanjaro Region", "Northern",
-  "Manyara Region", "Northern",
-  "Tanga Region", "Northern",
-  "Dodoma Region", "Central",
-  "Singida Region", "Central",
-  "Dar Es Salaam Region", "Eastern",
-  "Morogoro Region", "Eastern",
-  "Pwani Region", "Eastern",
-  "Iringa Region", "Southern_Highlands",
-  "Mbeya Region", "Southern_Highlands",
-  "Njombe Region", "Southern_Highlands",
-  "Rukwa Region", "Southern_Highlands",
-  "Ruvuma Region", "Southern_Highlands",
-  "Songwe Region", "Southern_Highlands",
-  "Lindi Region", "Southern",
-  "Mtwara Region", "Southern",
-  "Geita Region", "Lake",
-  "Kagera Region", "Lake",
-  "Mara Region", "Lake",
-  "Mwanza Region", "Lake",
-  "Simiyu Region", "Lake",
-  "Shinyanga Region", "Lake",
-  "Katavi Region", "Western",
-  "Kigoma Region", "Western",
-  "Tabora Region", "Western"
+  "Region 1", "Northern",
+  "Region 2", "Northern",
+  "Region 3", "Central",
+  "Region 4", "Central",
+  "Region 5", "Eastern",
+  "Region 6", "Eastern",
+  "Region 7", "Southern_Highlands",
+  "Region 8", "Southern_Highlands",
+  "Region 9", "Southern",
+  "Region 10", "Southern",
+  "Region 11", "Lake",
+  "Region 12", "Lake",
+  "Region 13", "Western",
+  "Region 14", "Western",
 )
 zone_order <- c("Northern", "Central", "Eastern", "Southern_Highlands", "Southern", "Lake", "Western")
 ecozones$ecozone_code <- match(ecozones$ecozone_name, zone_order)
@@ -385,7 +367,7 @@ if (build_dataset) {
 analysis_file <- file.path(data_dir, "analysis_data.csv")
 
 if (build_dataset) {
-  cases <- read.csv(file.path(data_dir, "tz_council_opd_monthly.csv"))
+  cases <- read.csv(file.path(data_dir, "your_areas_monthly.csv"))
 
   data <- cases |>
     left_join(climate, by = c("Region", "Council", "year", "month")) |>
@@ -1302,5 +1284,3 @@ if (run_cross_validation) {
   write.csv(cv_summary, file.path(tab_dir, "cross_validation.csv"), row.names = FALSE)
   print(cv_summary)
 }
-
-sessionInfo()
