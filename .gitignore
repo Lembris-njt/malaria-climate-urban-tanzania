@@ -1,0 +1,17 @@
+# Data and results are not shared
+Data/
+outputs/
+*.csv
+*.rds
+*.RData
+*.nc
+*.tif
+*.shp
+*.dbf
+*.shx
+*.prj
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
